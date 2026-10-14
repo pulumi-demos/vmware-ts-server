@@ -1,0 +1,22 @@
+#cloud-config
+# Delivered to the VM through VMware guestinfo (guestinfo.userdata, base64).
+# index.ts substitutes the VM name for the hostname placeholder and an optional
+# ssh_authorized_keys block for the SSH keys placeholder before encoding.
+package_update: true
+packages:
+  - nginx
+write_files:
+  - path: /var/www/html/index.html
+    permissions: "0644"
+    content: |
+      <!DOCTYPE html>
+      <html>
+        <head><title>${HOSTNAME}</title></head>
+        <body>
+          <h1>Deployed by Pulumi on vSphere</h1>
+          <p>Host: ${HOSTNAME}</p>
+        </body>
+      </html>
+${SSH_AUTHORIZED_KEYS}
+runcmd:
+  - systemctl enable --now nginx

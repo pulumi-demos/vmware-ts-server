@@ -1,0 +1,17 @@
+environment:
+  - default/lotctl-aws
+config:
+  vsphere:vsphereServer: localhost:8989
+  vsphere:user: user
+  vsphere:password:
+    secure: AAABAIN+LOsOy85GYG4hUbK2FmnUxFXUQlcHujCspkRbvq9a
+  vsphere:allowUnverifiedSsl: "true"
+  vmware-ts-server:datacenter: DC0
+  vmware-ts-server:cluster: DC0_C0
+  vmware-ts-server:datastore: LocalDS_0
+  vmware-ts-server:network: VM Network
+  vmware-ts-server:template: DC0_C0_RP0_VM0
+  vmware-ts-server:vmName: nginx-demo
+  vmware-ts-server:cpus: "1"
+  vmware-ts-server:memoryMb: "1024"
+  vmware-ts-server:simulate: "true"

@@ -1,0 +1,14 @@
+services:
+  vcsim:
+    image: vmware/vcsim:latest
+    command: ["-l", "0.0.0.0:8989"]
+    ports:
+      - "8989:8989"
+  govc:
+    image: vmware/govc:latest
+    profiles: ["tools"]
+    depends_on: [vcsim]
+    environment:
+      GOVC_URL: https://user:pass@vcsim:8989/sdk
+      GOVC_INSECURE: "1"
+    entrypoint: ["/govc"]

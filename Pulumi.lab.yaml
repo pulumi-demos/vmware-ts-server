@@ -1,0 +1,25 @@
+# Placeholder config for a real vCenter/ESXi. This stack is NOT initialised yet.
+# To use it: `pulumi stack init lab`, then set the values below with
+# `pulumi config set` (the password MUST use --secret). See README.md.
+config:
+  # --- Provider ---
+  vsphere:vsphereServer: vcenter.example.local
+  vsphere:user: administrator@vsphere.local
+  # Set with: pulumi config set --secret vsphere:password '<password>' -s lab
+  vsphere:allowUnverifiedSsl: "true" # set to "false" if vCenter has a trusted certificate
+
+  # --- Inventory (replace with your names) ---
+  vmware-ts-server:datacenter: YOUR_DATACENTER
+  vmware-ts-server:cluster: YOUR_CLUSTER # used when resourcePool is unset
+  # vmware-ts-server:resourcePool: Compute-ResourcePool # optional, overrides cluster
+  # vmware-ts-server:folder: Workloads # optional existing VM folder; if unset, "pulumi-demo" is created
+  vmware-ts-server:datastore: YOUR_DATASTORE
+  vmware-ts-server:network: YOUR_PORT_GROUP # needs DHCP
+  vmware-ts-server:template: ubuntu-2404-cloud # may be a folder path
+
+  # --- VM ---
+  vmware-ts-server:vmName: nginx-demo
+  vmware-ts-server:cpus: "2"
+  vmware-ts-server:memoryMb: "2048"
+  vmware-ts-server:simulate: "false"
+  # vmware-ts-server:sshPublicKey: ssh-ed25519 AAAA... # optional, installed for user "ubuntu"

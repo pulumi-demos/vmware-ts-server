@@ -1,0 +1,10 @@
+/bin/
+/node_modules/
+
+.claude
+.mcp.json
+# Local renders of the README Mermaid diagram (mermaid-cli)
+arch.mmd
+arch.png
+README.rendered.md
+CLAUDE.md

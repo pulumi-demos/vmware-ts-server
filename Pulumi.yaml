@@ -1,0 +1,10 @@
+name: vmware-ts-server
+description: Clones a vSphere VM from a template and serves a custom page with nginx via cloud-init
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: typescript
