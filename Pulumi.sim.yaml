@@ -1,10 +1,11 @@
 environment:
-  - default/lotctl-aws
+  # - default/lotctl-aws
+  - lotctl/lotctl-aws
 config:
   vsphere:vsphereServer: localhost:8989
   vsphere:user: user
   vsphere:password:
-    secure: AAABAIN+LOsOy85GYG4hUbK2FmnUxFXUQlcHujCspkRbvq9a
+    secure: AAABAFp2oCa/3T8wfm546UmfzRJv8leRGsWNYH0s2LLC/QnubWj92GXY3xE=
   vsphere:allowUnverifiedSsl: "true"
   vmware-ts-server:datacenter: DC0
   vmware-ts-server:cluster: DC0_C0

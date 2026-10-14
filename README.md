@@ -20,7 +20,7 @@ All environment-specific values live in stack config; nothing is hardcoded in
 ```mermaid
 flowchart LR
     subgraph ESC["Pulumi ESC"]
-        awsEnv["default/lotctl-aws<br/>fn::open::aws-login (OIDC)"]
+        awsEnv["lotctl/lotctl-aws<br/>fn::open::aws-login (OIDC)"]
         invEnv["vmware-ts-server/onprem-inventory<br/>fn::open::aws-secrets"]
     end
 
@@ -90,7 +90,7 @@ The program also writes an inventory record for the VM (name, moid, UUID,
 placement, sizing, IP) to AWS Secrets Manager as `onprem/vms/<vmName>`.
 
 1. **ESC → Pulumi:** the `sim` stack imports the ESC environment
-   `default/lotctl-aws`, which supplies short-lived AWS credentials via OIDC and
+   `lotctl/lotctl-aws`, which supplies short-lived AWS credentials via OIDC and
    `aws:region`.
 2. **vSphere → AWS:** the secret's value is built from the VM's outputs, so
    Pulumi creates the VM first and the secret second.
@@ -100,13 +100,89 @@ placement, sizing, IP) to AWS Secrets Manager as `onprem/vms/<vmName>`.
 
 ```bash
 pulumi up -s sim
-pulumi env open team-ce/vmware-ts-server/onprem-inventory   # reveals the secret
+pulumi env open demo/vmware-ts-server/onprem-inventory vms
 ```
 
 Or browse it in the console at
-<https://app.pulumi.com/team-ce/esc/vmware-ts-server/onprem-inventory>. Opening
+<https://app.pulumi.com/demo/esc/vmware-ts-server/onprem-inventory>. Opening
 the environment fails until `pulumi up` has created the secret. The secret uses
 `recoveryWindowInDays: 0`, so `pulumi destroy` deletes it immediately.
+
+### ESC environments
+
+Both environments live in the same Pulumi Cloud organization as the stack
+(`demo`); ESC imports only resolve within one organization.
+
+`lotctl/lotctl-aws` exchanges a Pulumi OIDC token for short-lived AWS
+credentials and hands them to the stack. The IAM role must trust Pulumi Cloud's
+OIDC provider (`api.pulumi.com/oidc`) for your organization.
+
+```yaml
+values:
+  aws:
+    creds:
+      fn::open::aws-login:
+        oidc:
+          duration: 1h
+          roleArn: arn:aws:iam::<account-id>:role/<oidc-role>
+          sessionName: pulumi-environments-session
+  # Exported to the Pulumi program and the AWS provider.
+  environmentVariables:
+    AWS_ACCESS_KEY_ID: ${aws.creds.accessKeyId}
+    AWS_SECRET_ACCESS_KEY: ${aws.creds.secretAccessKey}
+    AWS_SESSION_TOKEN: ${aws.creds.sessionToken}
+  # Becomes stack config (aws:region) for every stack that imports this.
+  pulumiConfig:
+    aws:region: us-west-2
+```
+
+The stack links it in `Pulumi.sim.yaml`:
+
+```yaml
+environment:
+  - lotctl/lotctl-aws
+```
+
+`vmware-ts-server/onprem-inventory` imports it for the AWS login, reads the
+inventory secret with `fn::open::aws-secrets`, and parses the JSON so each field
+is browsable:
+
+```yaml
+imports:
+  - lotctl/lotctl-aws
+values:
+  inventory:
+    fn::open::aws-secrets:
+      region: us-west-2
+      login: ${aws.creds}
+      get:
+        nginxDemo:
+          secretId: onprem/vms/nginx-demo
+  vms:
+    nginx-demo:
+      fn::fromJSON: ${inventory.nginxDemo}
+```
+
+Opened (`pulumi env open demo/vmware-ts-server/onprem-inventory vms`), it
+returns:
+
+```json
+{
+  "nginx-demo": {
+    "name": "nginx-demo",
+    "moid": "vm-76",
+    "uuid": "a2db35b9-adaa-5414-b4ed-217774e96fd0",
+    "datacenter": "DC0",
+    "cluster": "DC0_C0",
+    "datastore": "LocalDS_0",
+    "network": "VM Network",
+    "cpus": 1,
+    "memoryMb": 1024,
+    "ipAddress": null,
+    "vcenter": "localhost:8989"
+  }
+}
+```
 
 ## Lab mode (real vCenter)
 
